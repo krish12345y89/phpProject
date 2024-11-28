@@ -1,132 +1,192 @@
+<?php
+// Start session
+session_start();
+
+// Include the database connection file
+include('./includes/db_connection.php');
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get form data
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $phone = $_POST['phone'];
+    $father_name = $_POST['father_name'];
+    $mother_name = $_POST['mother_name'];
+    $dmc_10th = $_POST['dmc_10th'];
+    $dmc_12th = $_POST['dmc_12th'];
+    $branch = $_POST['branch'];
+    $semester = $_POST['semester'];
+    $remarks = $_POST['remarks'];
+
+    // Prepare the SQL query
+    $stmt = $conn->prepare("INSERT INTO students (name, email, phone, father_name, mother_name, dmc_10th, dmc_12th, branch, semester, remarks) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssssssss", $name, $email, $phone, $father_name, $mother_name, $dmc_10th, $dmc_12th, $branch, $semester, $remarks);
+
+    // Execute the statement
+    if ($stmt->execute()) {
+        // Redirect to success page
+        header("Location: get.php");
+        exit();
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    // Close the statement and connection
+    $stmt->close();
+    $conn->close();
+}
+?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Admission Form</title>
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: whitesmoke; /* light gray background color */
-		}
-		form {
-			width: 50%; /* set the width of the form */
-			margin: 40px auto; /* center the form horizontally */
-			padding: 20px; /* add some padding around the form */
-			border: 3px solid #751f1f; /* add a border around the form */
-			border-radius: 30px; /* add a rounded corner to the form */
-			box-shadow: 0 0 30px rgba(132, 8, 8, 0.1); /* add a subtle shadow to the form */
-		}
-		label {
-			display: block; /* make the label a block element */
-			margin-bottom: 10px; /* add some space between labels */
-		}
-		input, textarea {
-			width: 100%; /* make the input fields and textarea full-width */
-			padding: 10px; /* add some padding to the input fields and textarea */
-			margin-bottom: 20px; /* add some space between input fields and textarea */
-			border: 1px solid #95929a; /* add a border around the input fields and textarea */
-		}
-		input[type="submit"] {
-			background-color: #874caf; /* green background color for the submit button */
-			color: #FFFFFF; /* white text color for the submit button */
-			padding: 10px 20px; /* add some padding to the submit button */
-			border: none; /* remove the border around the submit button */
-			border-radius: 5px; /* add a rounded corner to the submit button */
-			cursor: pointer; /* change the cursor to a pointer when hovering over the submit button */
-		}
-		input[type="submit"]:hover {
-			background-color: #3e8e41; /* darker green background color on hover */
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admission Form</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Form Container */
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #4A90E2; /* Blue color for the heading */
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #4A90E2; /* Change border color on focus */
+            outline: none; /* Remove default outline */
+        }
+
+        input[type="submit"] {
+            background-color: #4A90E2; /* Blue background for the button */
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            width: 100%; /* Full width button */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            form {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    <script>
+        function validateForm() {
+            const requiredFields = ['name', 'email', 'phone', 'father_name', 'mother_name', 'dmc_10th', 'd mc_12th', 'branch', 'semester'];
+            for (let field of requiredFields) {
+                const value = document.getElementById(field).value.trim();
+                if (!value) {
+                    alert(field.replace('_', ' ') + " is required.");
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
-<form action="./text.php" method="POST">
-		<h2>Admission Form</h2>
-		<label for="name">Name:</label>
-		<input type="text" id="name" name="name"><br><br>
-		<label for="email">Email:</label>
-		<input type="email" id="email" name="email"><br><br>
-		<label for="phone">Phone:</label>
-		<input type="tel" id="phone" name="phone"><br><br>
-        <label for="father_name">Father name:</label>
-		<input type="text" id="father_name" name="father_name"><br><br>
-        <label for="mother_name">Mother name:</label>
-		<input type="text" id="mother_name" name="mother_name"><br><br>
+    <form action="form.php" method="POST" onsubmit="return validateForm()">
+        <h2>Admission Form</h2>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required>
+
+        <label for="father_name">Father Name:</label>
+        <input type="text" id="father_name" name="father_name" required>
+
+        <label for="mother_name">Mother Name:</label>
+        <input type="text" id="mother_name" name="mother_name" required>
+
         <label for="dmc_10th">DMC for 10th:</label>
-		<input type="text" id="dmc_10th" name="dmc_10th"><br><br>
-        <label for="dmc_12th">DMC of 12th:</label>
-		<input type="text" id="dmc_12th" name="dmc_12th"><br><br>
-        <p><h7>NOTE:- FOR LATERAL ENTERY YOU MUST PASS OUT FROM 12TH CLASS IN NON-MED. STREAM</h7> </p>
-		<label for="branch">Branch:</label>
-		<select id="branch" name="branch">
-			<option value="">Select a trade</option>
-			<option value="Diploma of  in Computer Science"> Diploma   in Computer Science</option>
-			<option value="Diploma of in Civil "> Diploma of in Civil</option>
-			<option value=" Diploma of in I&C"> Diploma of in I&C </option>
-            <option value="Diploma of in Mechanical"> Diploma of in Mechanical </option>
-		</select><br><br>
-		<label for="semester">Semester:</label>
-		<select id="semester" name="semester">
-			<option value="">Select a semester</option>
-			<option value="1st">1st</option>
-			<option value="3rd for lateral entry">3rd for lateral entry</option>
-		</select><br><br>
-		<label for="remarks">Student Remarks:</label>
-		<textarea id="remarks" name="remarks"></textarea><br><br>
-		<input type="submit" value="Submit">
-</form>
-	<?php
-	// Check if the form has been submitted using GET or POST method
-	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-		// Get data from query string
-		$name = $_GET['name'];
-		$email = $_GET['email'];
-		$phone = $_GET['phone'];
-		$father_name = $_GET['father_name'];
-		$mother_name = $_GET['mother_name'];
-		$dmc_10th = $_GET['dmc_10th'];
-		$dmc_12th = $_GET['dmc_12th'];
-		$branch = $_GET['branch'];
-		$semester = $_GET['semester'];
-		$remarks = $_GET['remarks'];
+        <input type="text" id="dmc_10th" name="dmc_10th" required>
 
-		// Process get data
-		echo "Thank you for submitting the admission form, " . $name . "!<br>";
-		echo "Your email is: " . $email . "<br>";
-		echo "Your phone number is: " . $phone . "<br>";
-		echo "Your father's name is: " . $father_name . "<br>";
-		echo "Your mother's name is: " . $mother_name . "<br>";
-		echo "Your DMC for 10th is: " . $dmc_10th . "<br>";
-		echo "Your DMC for 12th is: " . $dmc_12th . "<br>";
-		echo "You have chosen the " . $branch . " branch.<br>";
-		echo "You have chosen the " . $semester . " semester.<br>";
-		echo "Your remarks are: " . $remarks . "<br>";
-	} elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-		// Get data from post request
-		$name = $_POST['name'];
-		$email = $_POST['email'];
-		$phone = $_POST['phone'];
-		$father_name = $_POST['father_name'];
-		$mother_name = $_POST['mother_name'];
-		$dmc_10th = $_POST['dmc_10th'];
-		$dmc_12th = $_POST['dmc_12th'];
-		$branch = $_POST['branch'];
-		$semester = $_POST['semester'];
-		$remarks = $_POST['remarks'];
+        <label for="dmc_12th">DMC for 12th:</label>
+        <input type="text" id="dmc_12th" name="dmc_12th" required>
 
-		// Process post data
-		echo "Thank you for submitting the admission form, " . $name . "!<br>";
-		echo "Your email is: " . $email . "<br>";
-		echo "Your phone number is: " . $phone . "<br>";
-		echo "Your father's name is: " . $father_name . "<br>";
-		echo "Your mother's name is: " . $mother_name . "<br>";
-		echo "Your DMC for 10th is: " . $dmc_10th . "<br>";
-		echo "Your DMC for 12th is: " . $dmc_12th . "<br>";
-		echo "You have chosen the " . $branch . " branch.<br>";
-		echo "You have chosen the " . $semester . " semester.<br>";
-		echo "Your remarks are: " . $remarks . "<br>";
-	} else {
-		// Display the form
-	?>
-	<?php } ?>
+        <label for="branch">Branch:</label>
+        <select id="branch" name="branch" required>
+            <option value="">Select a Branch</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Civil">Civil</option>
+            <option value="I&C">I&C</option>
+            <option value="Mechanical">Mechanical</option>
+        </select>
+
+        <label for="semester">Semester:</label>
+        <select id="semester" name="semester" required>
+            <option value="">Select Semester</option>
+            <option value="1st">1st</option>
+            <option value="3rd for lateral entry">3rd for lateral entry</option>
+        </select>
+
+        <label for="remarks">Remarks:</label>
+        <textarea id="remarks" name="remarks" rows="4"></textarea>
+
+        <input type="submit" value="Submit">
+    </form>
 </body>
 </html>
