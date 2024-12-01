@@ -7,17 +7,25 @@ include('./includes/db_connection.php');
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get form data
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $father_name = $_POST['father_name'];
-    $mother_name = $_POST['mother_name'];
-    $dmc_10th = $_POST['dmc_10th'];
-    $dmc_12th = $_POST['dmc_12th'];
-    $branch = $_POST['branch'];
-    $semester = $_POST['semester'];
-    $remarks = $_POST['remarks'];
+    // Get form data and sanitize it
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
+    $father_name = trim($_POST['father_name']);
+    $mother_name = trim($_POST['mother_name']);
+    $dmc_10th = trim($_POST['dmc_10th']);
+    $dmc_12th = trim($_POST['dmc_12th']);
+    $branch = trim($_POST['branch']);
+    $semester = trim($_POST['semester']);
+    $remarks = trim($_POST['remarks']);
+
+    // Store data in session
+    $_SESSION['name'] = $name;
+    $_SESSION['email'] = $email;
+    $_SESSION['phone'] = $phone;
+
+    // Set a cookie for the name (expires in 30 days)
+    setcookie("user_name", $name, time() + (30 * 24 * 60 * 60), "/"); // 30 days
 
     // Prepare the SQL query
     $stmt = $conn->prepare("INSERT INTO students (name, email, phone, father_name, mother_name, dmc_10th, dmc_12th, branch, semester, remarks) 
@@ -131,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
     <script>
         function validateForm() {
-            const requiredFields = ['name', 'email', 'phone', 'father_name', 'mother_name', 'dmc_10th', 'd mc_12th', 'branch', 'semester'];
+            const requiredFields = ['name', 'email', 'phone', 'father_name', 'mother_name', 'dmc_10th', 'dmc_12th', 'branch', 'semester'];
             for (let field of requiredFields) {
                 const value = document.getElementById(field).value.trim();
                 if (!value) {
