@@ -6,6 +6,11 @@ session_start();
 $name = $_SESSION['name'] ?? 'N/A';
 $email = $_SESSION['email'] ?? 'N/A';
 $phone = $_SESSION['phone'] ?? 'N/A';
+
+// Set a cookie for the name (expires in 30 days)
+if (!empty($name)) {
+    setcookie("user_name", $name, time() + (30 * 24 * 60 * 60), "/"); // 30 days
+}
 ?>
 
 <!DOCTYPE html>
